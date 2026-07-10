@@ -70,6 +70,7 @@ export default function AnnotatorCanvas({
     index: number;
   } | null>(null);
   const [dragMeasure, setDragMeasure] = useState<0 | 1 | null>(null);
+  const [metersInput, setMetersInput] = useState("");
 
   // Load image
   useEffect(() => {
@@ -698,19 +699,28 @@ export default function AnnotatorCanvas({
           <span className="text-sm font-medium text-[#1a2e22]">
             Длина отрезка:
           </span>
-          <input
-            type="number"
-            min={0.01}
-            step={0.01}
-            value={measurement.meters}
-            onChange={(e) =>
-              setMeasurement({
-                ...measurement,
-                meters: Math.max(0.01, parseFloat(e.target.value) || 0),
-              })
-            }
-            className="w-24 px-2 py-1 rounded-lg border border-[#cfe0d6] text-sm font-semibold text-[#1a2e22] bg-white focus:outline-none focus:ring-2 focus:ring-[#2d7d4e]/20"
-          />
+         <input
+  type="number"
+  min={0.01}
+  step={0.01}
+  value={metersInput || measurement.meters}
+  onFocus={() => setMetersInput(String(measurement.meters))}
+  onChange={(e) => setMetersInput(e.target.value)}
+  onBlur={() => {
+    const value = parseFloat(metersInput.replace(",", "."));
+
+    if (!isNaN(value)) {
+      setMeasurement({
+        ...measurement,
+        meters: Math.max(0.01, value),
+      });
+      setMetersInput("");
+    } else {
+      setMetersInput("");
+    }
+  }}
+  className="w-24 px-2 py-1 rounded-lg border border-[#cfe0d6] text-sm font-semibold text-[#1a2e22] bg-white focus:outline-none focus:ring-2 focus:ring-[#2d7d4e]/20"
+/>
           <span className="text-sm text-[#5a7a67]">м</span>
           <button
             onClick={() => setMeasurement(null)}
