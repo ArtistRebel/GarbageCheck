@@ -22,14 +22,14 @@ jobs:
           node-version: 20
 
       - run: npm install
-        working-directory: migration-backup
+        working-directory: .migration-backup
 
       - run: npm run build
-        working-directory: migration-backup
+        working-directory: .migration-backup
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: migration-backup/dist
+          path: .migration-backup/dist
 
   deploy:
     needs: build
