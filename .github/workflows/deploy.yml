@@ -28,6 +28,7 @@ jobs:
         working-directory: artifacts/volume-estimator
         env:
           PORT: 5173
+          BASE_PATH: /GarbageCheck/
 
       - uses: actions/upload-pages-artifact@v3
         with:
