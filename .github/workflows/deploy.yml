@@ -30,6 +30,9 @@ jobs:
           PORT: 5173
           BASE_PATH: /GarbageCheck/
 
+      - name: Check build
+        run: ls -la artifacts/volume-estimator/dist
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: artifacts/volume-estimator/dist
