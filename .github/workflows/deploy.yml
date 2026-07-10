@@ -22,14 +22,14 @@ jobs:
           node-version: 20
 
       - run: npm install
-        working-directory: .migration-backup
+        working-directory: artifacts/volume-estimator
 
       - run: npm run build
-        working-directory: .migration-backup
+        working-directory: artifacts/volume-estimator
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .migration-backup/dist
+          path: artifacts/volume-estimator/dist
 
   deploy:
     needs: build
