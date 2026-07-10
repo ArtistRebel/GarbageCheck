@@ -14,7 +14,7 @@ export default function UploadZone({ onImage }: Props) {
     (file: File | undefined | null) => {
       if (!file) return;
       if (!file.type.startsWith("image/")) {
-        setError("Пожалуйста, выберите изображение (JPG, PNG и т.д.).");
+        setError("Пожалуйста, выберите файл изображения");
         return;
       }
       setError(null);
@@ -65,11 +65,11 @@ export default function UploadZone({ onImage }: Props) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
-        className={`relative cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200 ${
+        className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 ${
           dragging
-            ? "border-emerald-400 bg-emerald-50/60"
-            : "border-slate-200 bg-white/50 hover:border-emerald-300 hover:bg-emerald-50/30"
-        } px-6 py-12 text-center`}
+            ? "border-[#2d7d4e] bg-[#e6f0ea]"
+            : "border-[#cfe0d6] bg-white hover:border-[#2d7d4e]/40 hover:bg-[#e6f0ea]/50"
+        } px-6 py-12 text-center shadow-sm`}
       >
         <input
           ref={inputRef}
@@ -80,44 +80,41 @@ export default function UploadZone({ onImage }: Props) {
         />
         <div className="flex flex-col items-center gap-3">
           <div
-            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
-              dragging ? "bg-emerald-100" : "bg-slate-100"
+            className={`w-14 h-14 rounded-xl flex items-center justify-center transition-colors ${
+              dragging ? "bg-[#2d7d4e]/10" : "bg-[#f4f7f5]"
             }`}
           >
             <Upload
               className={`w-6 h-6 transition-colors ${
-                dragging ? "text-emerald-600" : "text-slate-400"
+                dragging ? "text-[#2d7d4e]" : "text-[#5a7a67]"
               }`}
               strokeWidth={1.5}
             />
           </div>
           <div>
-            <p className="text-base font-semibold text-slate-700">
-              Перетащите фото или нажмите
+            <p className="text-base font-semibold text-[#1a2e22]">
+              Нажмите или перетащите фотографию
             </p>
-            <p className="text-sm text-slate-400 mt-0.5">
-              или вставьте из буфера (Ctrl+V)
+            <p className="text-sm text-[#5a7a67] mt-0.5">
+              Или вставьте из буфера обмена (Ctrl+V)
             </p>
           </div>
           <div className="flex gap-2 mt-1">
-            <span className="inline-flex items-center gap-1 text-xs text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+            <span className="inline-flex items-center gap-1 text-xs text-[#5a7a67] bg-[#f4f7f5] px-2.5 py-1 rounded-md border border-[#cfe0d6]">
               JPG · PNG · WEBP
-            </span>
-            <span className="inline-flex items-center gap-1 text-xs text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
-              <ClipboardPaste className="w-3 h-3" /> Буфер
             </span>
           </div>
         </div>
       </div>
       {error && (
-        <div className="mt-3 flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2.5 rounded-lg">
+        <div className="mt-3 flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2.5 rounded-lg border border-red-100">
           <X className="w-4 h-4 shrink-0" />
           {error}
         </div>
       )}
-      <p className="mt-4 text-center text-xs text-slate-400 flex items-center justify-center gap-1.5">
+      <p className="mt-4 text-center text-xs text-[#5a7a67] flex items-center justify-center gap-1.5">
         <Lock className="w-3 h-3" />
-        Фото не покидает ваше устройство
+        Файлы не загружаются на сервер
       </p>
     </div>
   );

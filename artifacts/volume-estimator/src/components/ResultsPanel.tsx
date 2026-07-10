@@ -1,7 +1,6 @@
 import { Truck, Layers, Info, Sparkles } from "lucide-react";
 import type { FootprintLayer, Measurement, VolumeResult } from "../lib/volume";
 import { computeVolume, totalVolume } from "../lib/volume";
-import { FILL_FACTOR_LABELS } from "../lib/volume";
 import {
   formatM2,
   formatM3,
@@ -16,6 +15,12 @@ type Props = {
   setFillKey: (k: string) => void;
 };
 
+const LOCAL_FILL_LABELS = [
+  { value: "loose", label: "Рыхлая", desc: "Только насыпана, много пустот" },
+  { value: "mixed", label: "Смешанная", desc: "Частично слежалась, умеренные пустоты" },
+  { value: "compacted", label: "Плотная", desc: "Утрамбована, минимум пустот" },
+];
+
 export default function ResultsPanel({
   layers,
   measurement,
@@ -28,14 +33,14 @@ export default function ResultsPanel({
 
   if (!hasMeasurement || !hasLayers) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
-        <Info className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p className="text-sm text-slate-500">
+      <div className="bg-white rounded-xl border border-[#cfe0d6] p-6 text-center shadow-sm">
+        <Info className="w-8 h-8 text-[#a8c9b4] mx-auto mb-2" />
+        <p className="text-sm text-[#5a7a67]">
           {!hasMeasurement && !hasLayers
-            ? "Укажите эталонный размер и обведите хотя бы одну кучу для отображения результатов."
+            ? "Задайте масштаб и обведите кучу, чтобы увидеть расчёт."
             : !hasMeasurement
-              ? "Укажите эталонный размер для задания масштаба."
-              : "Обведите хотя бы одну кучу для отображения результатов."}
+              ? "Задайте масштаб — нарисуйте отрезок вдоль объекта известного размера."
+              : "Обведите контур хотя бы одной кучи."}
         </p>
       </div>
     );
@@ -50,23 +55,23 @@ export default function ResultsPanel({
   return (
     <div className="space-y-4">
       {/* Fill factor selector */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4">
-        <label className="text-sm font-semibold text-slate-700 block mb-2">
-          Плотность кучи
+      <div className="bg-white rounded-xl border border-[#cfe0d6] p-4 shadow-sm">
+        <label className="text-sm font-semibold text-[#1a2e22] block mb-2 tracking-tight">
+          Плотность заполнения
         </label>
-        <div className="grid grid-cols-3 gap-2">
-          {FILL_FACTOR_LABELS.map((f) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {LOCAL_FILL_LABELS.map((f) => (
             <button
               key={f.value}
               onClick={() => setFillKey(f.value)}
               className={`text-left px-3 py-2 rounded-lg border text-xs transition-all ${
                 fillKey === f.value
-                  ? "border-emerald-400 bg-emerald-50 ring-2 ring-emerald-100"
-                  : "border-slate-200 hover:border-slate-300"
+                  ? "border-[#2d7d4e] bg-[#e6f0ea] ring-2 ring-[#2d7d4e]/20"
+                  : "border-[#cfe0d6] bg-white hover:border-[#2d7d4e]/40"
               }`}
             >
-              <div className="font-semibold text-slate-800">{f.label}</div>
-              <div className="text-slate-500 mt-0.5">{f.desc}</div>
+              <div className={`font-semibold ${fillKey === f.value ? "text-[#1a2e22]" : "text-[#1a2e22]"}`}>{f.label}</div>
+              <div className={`mt-0.5 ${fillKey === f.value ? "text-[#5a7a67]" : "text-[#5a7a67]"}`}>{f.desc}</div>
             </button>
           ))}
         </div>
@@ -77,15 +82,15 @@ export default function ResultsPanel({
         {results.map((r) => (
           <div
             key={r.layerId}
-            className="bg-white rounded-xl border border-slate-200 p-4"
+            className="bg-white rounded-xl border border-[#cfe0d6] p-4 shadow-sm"
           >
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold text-slate-800 text-sm">
+              <h4 className="font-semibold text-[#1a2e22] text-sm tracking-tight">
                 {r.label}
               </h4>
               {r.heightM <= 0 && (
-                <span className="text-xs text-amber-600 font-medium">
-                  Введите высоту
+                <span className="text-xs text-[#2d7d4e] font-medium bg-[#e6f0ea] px-2 py-0.5 rounded">
+                  Укажите высоту
                 </span>
               )}
             </div>
@@ -105,34 +110,34 @@ export default function ResultsPanel({
         ))}
       </div>
 
-      {/* Totals — prominent on-screen display */}
+      {/* Totals */}
       {canCompute && (
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-xl">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="bg-[#1a3329] rounded-xl p-6 text-white shadow-sm">
+          <div className="flex items-center gap-2 mb-4 text-[#a8c9b4]">
             <Layers className="w-5 h-5" />
-            <h3 className="font-semibold">Общий расчётный объём</h3>
+            <h3 className="font-semibold tracking-tight text-white">Суммарный объём</h3>
           </div>
           <div className="text-center py-2">
-            <p className="text-5xl font-bold tracking-tight">
+            <p className="text-4xl font-semibold tracking-tight text-white">
               {formatM3(totals.m3)}
             </p>
-            <p className="text-emerald-100 text-sm mt-1">кубических метров</p>
+            <p className="text-[#a8c9b4] text-sm mt-1">кубических метров</p>
           </div>
-          <div className="mt-4 pt-4 border-t border-emerald-400/40 grid grid-cols-2 gap-3">
+          <div className="mt-5 pt-5 border-t border-white/10 grid grid-cols-2 gap-3">
             <div className="flex items-center gap-2">
-              <Truck className="w-5 h-5 text-emerald-100 shrink-0" />
+              <Truck className="w-5 h-5 text-[#5dbf82] shrink-0" />
               <div>
-                <p className="text-xs text-emerald-100">Рейсов (по 8 м³)</p>
-                <p className="font-bold text-white">
+                <p className="text-xs text-[#a8c9b4]">Рейсов (8 м³/рейс)</p>
+                <p className="font-semibold text-white">
                   {formatTruckLoads(totals.m3)}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-100 shrink-0" />
+              <Sparkles className="w-5 h-5 text-[#5dbf82] shrink-0" />
               <div>
-                <p className="text-xs text-emerald-100">Общая площадь</p>
-                <p className="font-bold text-white">
+                <p className="text-xs text-[#a8c9b4]">Суммарная площадь</p>
+                <p className="font-semibold text-white">
                   {formatM2(totals.footprintM2)}
                 </p>
               </div>
@@ -142,13 +147,9 @@ export default function ResultsPanel({
       )}
 
       {/* Disclaimer */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-        <p className="text-xs text-amber-800 leading-relaxed">
-          <strong>Только оценка.</strong> Этот инструмент даёт грубое визуальное
-          приближение по одному 2D-фото. Точность зависит от качества эталонного
-          измерения, оценки высоты и угла съёмки. Результаты подходят для
-          планирования и отчётности, но не для коммерческого биллинга или
-          юридического соответствия.
+      <div className="bg-[#e6f0ea] border border-[#cfe0d6] rounded-xl p-4 shadow-sm mt-4">
+        <p className="text-xs text-[#5a7a67] leading-relaxed">
+          Приблизительная оценка. Точность зависит от корректности эталонного измерения, заданной высоты и угла съёмки.
         </p>
       </div>
     </div>
@@ -166,9 +167,9 @@ function Stat({
 }) {
   return (
     <div>
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-[#5a7a67]">{label}</p>
       <p
-        className={`font-semibold ${highlight ? "text-emerald-600 text-lg" : "text-slate-800"}`}
+        className={`font-semibold mt-0.5 ${highlight ? "text-[#2d7d4e] text-lg" : "text-[#1a2e22]"}`}
       >
         {value}
       </p>

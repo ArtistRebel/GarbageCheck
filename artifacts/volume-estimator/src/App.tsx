@@ -1,14 +1,5 @@
 import { useState, useCallback } from "react";
-import {
-  Trash2,
-  ShieldCheck,
-  Camera,
-  Ruler,
-  Wand2,
-  ArrowLeft,
-  Lock,
-  Zap,
-} from "lucide-react";
+import { Layers } from "lucide-react";
 import UploadZone from "./components/UploadZone";
 import AnnotatorCanvas from "./components/AnnotatorCanvas";
 import ResultsPanel from "./components/ResultsPanel";
@@ -40,30 +31,28 @@ function App() {
   }, [imageSrc]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#f4f7f5] flex flex-col font-sans">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-slate-200/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <header className="sticky top-0 z-20 bg-[#1a3329] h-14 border-b border-[#1a3329]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
-              <Trash2 className="w-4.5 h-4.5 text-white" strokeWidth={2} />
+            <div className="w-8 h-8 rounded-lg bg-[#2d7d4e] flex items-center justify-center shrink-0">
+              <Layers className="w-4.5 h-4.5 text-[#e6f0ea]" strokeWidth={2} />
             </div>
-            <h1 className="font-semibold text-slate-800 text-sm sm:text-base">
-              Оценка объёма кучи
+            <h1 className="font-semibold text-white text-sm">
+              Оценка объёма
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-              <Lock className="w-3.5 h-3.5" />
-              100% приватно
+            <span className="hidden sm:flex items-center text-xs text-[#a8c9b4]">
+              Всё — в браузере
             </span>
             {phase === "annotate" && (
               <button
                 onClick={handleNewPhoto}
-                className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                className="flex items-center gap-1.5 text-sm font-medium text-[#a8c9b4] hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Новое фото</span>
+                ← Назад
               </button>
             )}
           </div>
@@ -105,9 +94,9 @@ function App() {
         )}
       </main>
 
-      <footer className="border-t border-slate-200/60 bg-white/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-400">
-          Вся обработка в браузере. Данные не сохраняются и не передаются. Бесплатно.
+      <footer className="border-t border-[#cfe0d6] bg-[#f4f7f5]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-[#5a7a67]">
+          Вычисления выполняются в браузере. Данные не сохраняются и не передаются.
         </div>
       </footer>
     </div>
@@ -117,80 +106,69 @@ function App() {
 function LandingPage({ onImage }: { onImage: (file: File) => void }) {
   const steps = [
     {
-      icon: Camera,
-      title: "Загрузите фото",
-      desc: "Перетащите или вставьте фото мусорной кучи",
+      title: "Загрузите фотографию",
+      desc: "Выберите снимок с кучей мусора или перетащите его в окно",
     },
     {
-      icon: Ruler,
-      title: "Укажите эталон",
-      desc: "Измерьте объект известного размера для масштаба",
+      title: "Задайте масштаб",
+      desc: "Нарисуйте отрезок вдоль объекта с известными размерами — человека, машины или ящика",
     },
     {
-      icon: Wand2,
-      title: "ИИ обведёт кучи",
-      desc: "Автоматическое определение контура или вручную",
+      title: "Обведите контур",
+      desc: "Кликайте по краям кучи, добавляя точки. Замкните контур нажатием на первую точку или клавишей Enter",
+    },
+    {
+      title: "Получите объём",
+      desc: "Укажите высоту кучи — инструмент рассчитает объём в м³ и необходимое число рейсов",
     },
   ];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12">
       {/* Hero */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full mb-6 border border-emerald-100">
-          <Zap className="w-3.5 h-3.5" />
-          ИИ-автоматизация · бесплатно
+        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[#2d7d4e] bg-[#e6f0ea] px-3 py-1.5 rounded-full mb-6 border border-[#cfe0d6]">
+          Бесплатно · Без регистрации
         </div>
-        <h2 className="text-3xl sm:text-5xl font-bold text-slate-800 tracking-tight mb-4 leading-tight">
-          Расчёт объёма кучи
+        <h2 className="text-4xl sm:text-5xl font-semibold text-[#1a2e22] tracking-tight mb-4 leading-tight">
+          Рассчитайте объём
           <br />
-          <span className="text-emerald-600">по одному фото</span>
+          <span className="text-[#2d7d4e]">мусорной кучи</span>
         </h2>
-        <p className="text-slate-500 text-base sm:text-lg max-w-lg mx-auto leading-relaxed">
-          Загрузите фото, ИИ обведёт контур, укажите эталонный размер —
-          и получите объём в кубических метрах. Прямо в браузере.
+        <p className="text-[#5a7a67] text-base sm:text-lg max-w-lg mx-auto leading-relaxed">
+          Загрузите снимок, обведите контур, задайте масштаб — получите объём в м³. Всё вычисляется прямо в браузере, данные никуда не передаются.
         </p>
       </div>
 
       {/* Upload */}
       <UploadZone onImage={onImage} />
 
-      {/* Steps — compact, horizontal */}
-      <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {steps.map((s, i) => (
-          <div
-            key={s.title}
-            className="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-0 bg-white/60 rounded-2xl border border-slate-200/60 p-4 sm:p-5"
-          >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 sm:mx-auto mb-0 sm:mb-3">
-              <s.icon className="w-5 h-5 text-emerald-600" strokeWidth={1.5} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-slate-800 text-sm">
-                {i + 1}. {s.title}
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+      {/* Steps */}
+      <div className="mt-14">
+        <h3 className="text-xl font-semibold text-[#1a2e22] text-center mb-8 tracking-tight">Как это работает</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {steps.map((s, i) => (
+            <div
+              key={s.title}
+              className="bg-white rounded-xl border border-[#cfe0d6] p-5 shadow-sm"
+            >
+              <div className="text-2xl font-semibold text-[#2d7d4e] mb-2">
+                {i + 1}
+              </div>
+              <h4 className="font-semibold text-[#1a2e22] text-sm mb-1.5">
+                {s.title}
+              </h4>
+              <p className="text-xs text-[#5a7a67] leading-relaxed">
                 {s.desc}
               </p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Trust badges */}
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400">
-        <span className="flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          Без загрузки на сервер
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Lock className="w-4 h-4 text-emerald-500" />
-          Данные не покидают устройство
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Zap className="w-4 h-4 text-emerald-500" />
-          Мгновенный результат
-        </span>
+      <div className="mt-10 text-center text-xs text-[#5a7a67]">
+        Без загрузки данных · Приватность по умолчанию · Бесплатно
       </div>
     </div>
   );

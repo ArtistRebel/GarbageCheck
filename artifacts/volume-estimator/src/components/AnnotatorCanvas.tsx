@@ -8,9 +8,7 @@ import {
   Check,
   Plus,
   RotateCcw,
-  Wand2,
-  Loader2,
-} from "lucide-react";
+  } from "lucide-react";
 import type { Point } from "../lib/geometry";
 import {
   pointInPolygon,
@@ -18,9 +16,8 @@ import {
 } from "../lib/geometry";
 import type { FootprintLayer, Measurement } from "../lib/volume";
 import { uid } from "../lib/id";
-import { autoTrace } from "../lib/autotrace";
 
-type Tool = "select" | "polygon" | "measure" | "magic";
+type Tool = "select" | "polygon" | "measure";
 
 type Props = {
   imageSrc: string;
@@ -37,12 +34,12 @@ type Props = {
 const HIT_RADIUS = 12;
 const CLOSE_THRESHOLD = 14;
 const LAYER_COLORS = [
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#ef4444",
-  "#8b5cf6",
-  "#ec4899",
+  "#2d7d4e",
+  "#5dbf82",
+  "#a8c9b4",
+  "#5a7a67",
+  "#cfe0d6",
+  "#1a3329",
 ];
 
 export default function AnnotatorCanvas({
@@ -73,9 +70,6 @@ export default function AnnotatorCanvas({
     index: number;
   } | null>(null);
   const [dragMeasure, setDragMeasure] = useState<0 | 1 | null>(null);
-  const [aiProcessing, setAiProcessing] = useState(false);
-  const [aiTolerance, setAiTolerance] = useState(40);
-  const offscreenRef = useRef<HTMLCanvasElement | null>(null);
 
   // Load image
   useEffect(() => {
@@ -362,11 +356,6 @@ export default function AnnotatorCanvas({
         return;
       }
 
-      if (tool === "magic") {
-        runAutoTrace(pt);
-        return;
-      }
-
       if (tool === "measure") {
         if (measurement) {
           // Check if clicking on an endpoint to drag
@@ -578,105 +567,23 @@ export default function AnnotatorCanvas({
       }
       if (e.key === "v") setTool("select");
       if (e.key === "p") setTool("polygon");
-      if (e.key === "a") setTool("magic");
       if (e.key === "m") setTool("measure");
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [draftPoints, cancelDraft, finishPolygon, undoLastPoint]);
 
-  const runAutoTrace = useCallback(
-    (seedPt: Point) => {
-      const img = imgRef.current;
-      if (!img || !imgNaturalSize.w) return;
-      setAiProcessing(true);
-
-      // Defer to next frame so the loading spinner can render
-      requestAnimationFrame(() => {
-        try {
-          // Draw image to offscreen canvas at natural resolution for pixel analysis
-          if (!offscreenRef.current) {
-            offscreenRef.current = document.createElement("canvas");
-          }
-          const oc = offscreenRef.current;
-          oc.width = imgNaturalSize.w;
-          oc.height = imgNaturalSize.h;
-          const octx = oc.getContext("2d", { willReadFrequently: true });
-          if (!octx) return;
-          octx.drawImage(img, 0, 0);
-          const imageData = octx.getImageData(
-            0,
-            0,
-            imgNaturalSize.w,
-            imgNaturalSize.h,
-          );
-
-          const polygon = autoTrace(
-            imageData,
-            Math.round(seedPt.x),
-            Math.round(seedPt.y),
-            aiTolerance,
-          );
-
-          if (polygon.length >= 4) {
-            const newLayer: FootprintLayer = {
-              id: uid(),
-              polygon,
-              heightPx: 0,
-              heightM: 0,
-              label: `Куча ${layers.length + 1}`,
-            };
-            setLayers([...layers, newLayer]);
-            setActiveLayerId(newLayer.id);
-            setTool("select");
-          } else {
-            // Region too small — try with higher tolerance
-            const polygon2 = autoTrace(
-              imageData,
-              Math.round(seedPt.x),
-              Math.round(seedPt.y),
-              aiTolerance + 20,
-            );
-            if (polygon2.length >= 4) {
-              const newLayer: FootprintLayer = {
-                id: uid(),
-                polygon: polygon2,
-                heightPx: 0,
-                heightM: 0,
-                label: `Куча ${layers.length + 1}`,
-              };
-              setLayers([...layers, newLayer]);
-              setActiveLayerId(newLayer.id);
-              setTool("select");
-            }
-          }
-        } catch (err) {
-          console.error("Auto-trace failed:", err);
-        } finally {
-          setAiProcessing(false);
-        }
-      });
-    },
-    [
-      imgNaturalSize,
-      aiTolerance,
-      layers,
-      setLayers,
-      setActiveLayerId,
-    ],
-  );
 
   const tools: { id: Tool; icon: typeof MousePointer2; label: string; key: string }[] = [
     { id: "select", icon: MousePointer2, label: "Выбор", key: "V" },
     { id: "polygon", icon: PenTool, label: "Контур", key: "P" },
-    { id: "magic", icon: Wand2, label: "ИИ", key: "A" },
-    { id: "measure", icon: Ruler, label: "Эталон", key: "M" },
+    { id: "measure", icon: Ruler, label: "Масштаб", key: "M" },
   ];
 
   return (
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 bg-white rounded-xl border border-slate-200 px-3 py-2 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2 bg-white rounded-xl border border-[#cfe0d6] px-3 py-2 shadow-sm">
         <div className="flex gap-1">
           {tools.map((t) => (
             <button
@@ -684,8 +591,8 @@ export default function AnnotatorCanvas({
               onClick={() => setTool(t.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 tool === t.id
-                  ? "bg-emerald-500 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-[#2d7d4e] text-white"
+                  : "text-[#5a7a67] hover:bg-[#e6f0ea]"
               }`}
             >
               <t.icon className="w-4 h-4" />
@@ -694,43 +601,43 @@ export default function AnnotatorCanvas({
             </button>
           ))}
         </div>
-        <div className="h-6 w-px bg-slate-200 mx-1" />
+        <div className="h-6 w-px bg-[#cfe0d6] mx-1" />
         {tool === "polygon" && draftPoints.length > 0 && (
           <>
             <button
               onClick={undoLastPoint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#5a7a67] hover:bg-[#e6f0ea]"
             >
-              <Undo2 className="w-4 h-4" /> Отменить
+              <Undo2 className="w-4 h-4" /> Отменить точку
             </button>
             {draftPoints.length >= 3 && (
               <button
                 onClick={finishPolygon}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-[#2d7d4e] text-white hover:bg-[#1a3329]"
               >
-                <Check className="w-4 h-4" /> Замкнуть
+                <Check className="w-4 h-4" /> Завершить
               </button>
             )}
             <button
               onClick={cancelDraft}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#5a7a67] hover:bg-[#e6f0ea]"
             >
-              <RotateCcw className="w-4 h-4" /> Отмена
+              <RotateCcw className="w-4 h-4" /> Сбросить
             </button>
           </>
         )}
         <div className="ml-auto flex gap-1">
           <button
             onClick={startNewPile}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-emerald-600 hover:bg-emerald-50 border border-emerald-200"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea]"
           >
-            <Plus className="w-4 h-4" /> Новая куча
+            <Plus className="w-4 h-4" /> Добавить кучу
           </button>
           <button
             onClick={resetAll}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50"
           >
-            <Trash2 className="w-4 h-4" /> Сброс
+            <Trash2 className="w-4 h-4" /> Очистить всё
           </button>
         </div>
       </div>
@@ -738,7 +645,7 @@ export default function AnnotatorCanvas({
       {/* Canvas */}
       <div
         ref={containerRef}
-        className="relative bg-slate-800 rounded-xl overflow-hidden flex items-center justify-center"
+        className="relative bg-[#1a2e22] rounded-xl overflow-hidden flex items-center justify-center"
         style={{ minHeight: 200 }}
       >
         {imgLoaded && displaySize.w > 0 ? (
@@ -761,70 +668,35 @@ export default function AnnotatorCanvas({
       </div>
 
       {/* Status bar */}
-      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+      <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7a67]">
         {tool === "polygon" && (
           <span>
-            Нажмите, чтобы добавить точки вокруг контура кучи. Нажмите на первую
-            точку (или Enter) для замыкания.
+            Кликайте по контуру кучи, добавляя точки. Первая точка замыкает полигон (Enter).
           </span>
         )}
         {tool === "measure" && (
           <span>
-            Нажмите и протяните через объект известного размера на фото
-            (человек, машина, дверь и т.д.), затем укажите его реальную длину ниже.
+            Нарисуйте отрезок вдоль объекта с известными размерами.
           </span>
         )}
         {tool === "select" && (
           <span>
-            Нажмите на кучу для выбора. Перетаскивайте точки для корректировки контура.
-          </span>
-        )}
-        {tool === "magic" && (
-          <span>
-            Нажмите на кучу — ИИ автоматически обведёт её контур по цвету и текстуре.
-            Регулируйте чувствительность ниже.
+            Выберите кучу. Перетаскивайте точки для корректировки контура.
           </span>
         )}
         {draftPoints.length > 0 && (
-          <span className="ml-auto font-medium text-slate-600">
+          <span className="ml-auto font-medium text-[#1a2e22]">
             {draftPoints.length} точек
           </span>
         )}
       </div>
 
-      {/* AI tolerance slider */}
-      {tool === "magic" && (
-        <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
-          <Wand2 className="w-5 h-5 text-violet-600 shrink-0" />
-          <span className="text-sm font-medium text-violet-900">
-            Чувствительность:
-          </span>
-          <input
-            type="range"
-            min={15}
-            max={80}
-            value={aiTolerance}
-            onChange={(e) => setAiTolerance(parseInt(e.target.value))}
-            className="flex-1 min-w-[100px] accent-violet-500"
-          />
-          <span className="text-sm text-violet-700 font-mono w-8 text-right">
-            {aiTolerance}
-          </span>
-          {aiProcessing && (
-            <span className="flex items-center gap-1.5 text-sm text-violet-600">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Обработка…
-            </span>
-          )}
-        </div>
-      )}
-
       {/* Measurement input */}
       {measurement && (
-        <div className="bg-cyan-50 border border-cyan-200 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
-          <Ruler className="w-5 h-5 text-cyan-600 shrink-0" />
-          <span className="text-sm font-medium text-cyan-900">
-            Эталонная длина:
+        <div className="bg-[#e6f0ea] border border-[#cfe0d6] rounded-xl px-4 py-3 flex flex-wrap items-center gap-3 shadow-sm">
+          <Ruler className="w-5 h-5 text-[#2d7d4e] shrink-0" />
+          <span className="text-sm font-medium text-[#1a2e22]">
+            Длина отрезка:
           </span>
           <input
             type="number"
@@ -837,12 +709,12 @@ export default function AnnotatorCanvas({
                 meters: Math.max(0.01, parseFloat(e.target.value) || 0),
               })
             }
-            className="w-24 px-2 py-1 rounded-lg border border-cyan-300 text-sm font-semibold text-cyan-900 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            className="w-24 px-2 py-1 rounded-lg border border-[#cfe0d6] text-sm font-semibold text-[#1a2e22] bg-white focus:outline-none focus:ring-2 focus:ring-[#2d7d4e]/20"
           />
-          <span className="text-sm text-cyan-700">метров</span>
+          <span className="text-sm text-[#5a7a67]">м</span>
           <button
             onClick={() => setMeasurement(null)}
-            className="ml-auto text-sm text-cyan-600 hover:text-cyan-800 font-medium"
+            className="ml-auto text-sm text-[#5a7a67] hover:text-red-500 font-medium transition-colors"
           >
             Удалить
           </button>
@@ -860,8 +732,8 @@ export default function AnnotatorCanvas({
                 key={layer.id}
                 className={`bg-white rounded-xl border px-4 py-3 transition-all ${
                   isActive
-                    ? "border-emerald-400 ring-2 ring-emerald-100"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? "border-[#2d7d4e] ring-2 ring-[#2d7d4e]/20"
+                    : "border-[#cfe0d6] hover:border-[#a8c9b4]"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -881,30 +753,31 @@ export default function AnnotatorCanvas({
                         ),
                       );
                     }}
-                    className="font-medium text-sm text-slate-800 bg-transparent border-none focus:outline-none focus:underline flex-1 min-w-0"
+                    className="font-medium text-sm text-[#1a2e22] bg-transparent border-none focus:outline-none focus:underline flex-1 min-w-0"
                   />
-                  <span className="text-xs text-slate-400 shrink-0">
-                    {layer.polygon.length} тчк
+                  <span className="text-xs text-[#5a7a67] shrink-0">
+                    {layer.polygon.length} точек
                   </span>
                   <button
                     onClick={() => deleteLayer(layer.id)}
-                    className="text-slate-400 hover:text-red-500 shrink-0"
+                    className="text-[#5a7a67] hover:text-red-500 shrink-0"
+                    aria-label="Удалить"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
                 {isActive && (
-                  <div className="mt-3 pt-3 border-t border-slate-100 space-y-3">
+                  <div className="mt-3 pt-3 border-t border-[#cfe0d6] space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-slate-600 block mb-1">
-                        Высота кучи (в метрах)
+                      <label className="text-xs font-medium text-[#5a7a67] block mb-1">
+                        Высота кучи
                       </label>
                       <input
                         type="number"
                         min={0}
                         step={0.1}
                         value={layer.heightM || ""}
-                        placeholder="напр. 1.5"
+                        placeholder="Высота, м"
                         onChange={(e) => {
                           const v = parseFloat(e.target.value) || 0;
                           setLayers(
@@ -915,12 +788,8 @@ export default function AnnotatorCanvas({
                             ),
                           );
                         }}
-                        className="w-32 px-2 py-1.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                        className="w-32 px-2 py-1.5 rounded-lg border border-[#cfe0d6] text-sm focus:outline-none focus:border-[#2d7d4e] focus:ring-1 focus:ring-[#2d7d4e]"
                       />
-                      <p className="text-xs text-slate-400 mt-1">
-                        Укажите высоту кучи в самой высокой точке. Это главный
-                        фактор объёма — введите вашу лучшую оценку.
-                      </p>
                     </div>
                   </div>
                 )}
