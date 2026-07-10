@@ -7,7 +7,8 @@ import {
   Box,
   Lock,
   UploadCloud,
-  Layers,
+  Leaf,
+  Zap,
 } from "lucide-react";
 
 export default function FieldTool() {
@@ -39,20 +40,20 @@ export default function FieldTool() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] font-sans flex flex-col text-[#1c1917]">
+    <div className="min-h-screen bg-[#f0fdf4] font-['DM_Sans',sans-serif] flex flex-col text-[#14532d]">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-[#1c1917] border-b border-[#292524] text-white">
+      <header className="sticky top-0 z-20 bg-[#14532d] border-b border-[#052e16] text-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded bg-[#d97706] flex items-center justify-center shrink-0">
-              <Layers className="w-5 h-5 text-white" strokeWidth={2} />
+            <div className="w-9 h-9 rounded bg-[#16a34a]/20 flex items-center justify-center shrink-0 border border-[#4ade80]/30 shadow-inner">
+              <Leaf className="w-5 h-5 text-[#4ade80]" strokeWidth={2} />
             </div>
-            <h1 className="font-bold text-base sm:text-lg tracking-wide">
+            <h1 className="font-semibold text-base sm:text-lg tracking-wide">
               Оценка объёма кучи
             </h1>
           </div>
           <div className="flex items-center">
-            <span className="flex items-center gap-1.5 text-xs text-[#d97706] font-semibold bg-[#292524] px-3 py-1.5 rounded">
+            <span className="flex items-center gap-1.5 text-xs text-[#bbf7d0] font-medium bg-[#14532d]/40 border border-[#15803d] px-3 py-1.5 rounded-full shadow-sm">
               <Lock className="w-3.5 h-3.5" />
               100% приватно
             </span>
@@ -60,81 +61,85 @@ export default function FieldTool() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="bg-[#292524] pt-16 pb-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#d97706] bg-[#d97706]/10 px-3 py-1.5 rounded border border-[#d97706]/20 mb-6 uppercase tracking-wider">
-            Бесплатный инструмент
+      {/* Hero band */}
+      <section className="bg-[#052e16] pt-16 pb-24 px-4 w-full relative">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4ade80] bg-[#14532d] px-4 py-1.5 rounded-full border border-[#15803d] mb-8 uppercase tracking-widest shadow-sm">
+            ЭКОЛОГИЯ &middot; ТОЧНОСТЬ
           </div>
-          <h2 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight mb-6 leading-tight">
+          <h2 className="text-5xl sm:text-6xl font-bold text-white tracking-tight mb-6 leading-tight">
             Расчёт объёма кучи
             <br />
-            <span className="text-[#d97706]">по одному фото</span>
+            <span className="text-[#4ade80]">по одному фото</span>
           </h2>
-          <p className="text-[#a8a29e] text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
+          <p className="text-[#dcfce7] text-lg sm:text-xl max-w-xl mx-auto leading-relaxed mb-12">
             Загрузите фото, обведите контур, укажите эталонный размер — получите объём в м³. Прямо в браузере.
           </p>
+
+          {/* Upload Zone Embedded */}
+          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-[#bbf7d0] p-10 sm:p-14 text-center flex flex-col items-center transition-all hover:border-[#4ade80] cursor-pointer group">
+            <div className="w-16 h-16 rounded-2xl bg-[#f0fdf4] group-hover:bg-[#dcfce7] flex items-center justify-center mb-6 text-[#16a34a] border border-[#bbf7d0] transition-colors">
+              <UploadCloud className="w-8 h-8" strokeWidth={1.5} />
+            </div>
+            <h3 className="text-2xl font-bold text-[#14532d] mb-2 group-hover:text-[#16a34a] transition-colors">Перетащите фото или нажмите</h3>
+            <p className="text-[#166534] mb-6 text-sm font-medium">или вставьте из буфера (Ctrl+V)</p>
+            <div className="flex gap-3 text-xs font-bold text-[#166534]">
+              <span className="bg-[#f0fdf4] px-3 py-1.5 rounded border border-[#bbf7d0]">JPG</span>
+              <span className="bg-[#f0fdf4] px-3 py-1.5 rounded border border-[#bbf7d0]">PNG</span>
+              <span className="bg-[#f0fdf4] px-3 py-1.5 rounded border border-[#bbf7d0]">WEBP</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <main className="flex-1 -mt-12 px-4 pb-20">
-        <div className="max-w-3xl mx-auto">
-          {/* Upload Zone */}
-          <div className="bg-white rounded-xl shadow-xl shadow-black/5 border-2 border-dashed border-[#e7e5e4] hover:border-[#d97706] transition-colors group cursor-pointer p-10 sm:p-14 text-center flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#f5f5f4] group-hover:bg-[#d97706]/10 flex items-center justify-center mb-6 transition-colors">
-              <UploadCloud className="w-8 h-8 text-[#d97706]" strokeWidth={1.5} />
-            </div>
-            <h3 className="text-2xl font-bold text-[#1c1917] mb-2">Перетащите фото или нажмите</h3>
-            <p className="text-[#78716c] mb-6 font-medium">или вставьте из буфера (Ctrl+V)</p>
-            <div className="flex gap-2 text-xs font-bold text-[#78716c]">
-              <span className="bg-[#f5f5f4] px-3 py-1.5 rounded border border-[#e7e5e4]">JPG</span>
-              <span className="bg-[#f5f5f4] px-3 py-1.5 rounded border border-[#e7e5e4]">PNG</span>
-              <span className="bg-[#f5f5f4] px-3 py-1.5 rounded border border-[#e7e5e4]">WEBP</span>
-            </div>
-          </div>
-
-          {/* Steps */}
-          <div className="mt-16 bg-[#f5f5f4] rounded-2xl p-8 sm:p-10 border border-[#e7e5e4]">
-            <h3 className="text-xl font-bold mb-8 text-center text-[#1c1917] uppercase tracking-wide">Как это работает</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {steps.map((s, i) => (
-                <div key={i} className="flex gap-5">
-                  <div className="text-4xl font-black text-[#d97706]/30 shrink-0 w-12 pt-1">{s.num}</div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <s.icon className="w-4 h-4 text-[#d97706]" strokeWidth={2.5} />
-                      <h4 className="font-bold text-[#1c1917] text-lg">{s.title}</h4>
-                    </div>
-                    <p className="text-[15px] text-[#78716c] leading-relaxed">{s.desc}</p>
-                  </div>
+      {/* Steps section */}
+      <section className="bg-[#f0fdf4] py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h3 className="text-sm font-bold mb-10 text-center text-[#16a34a] uppercase tracking-wider">
+            Как это работает
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {steps.map((s, i) => (
+              <div key={i} className="bg-white border border-[#dcfce7] rounded-2xl p-6 shadow-sm flex flex-col hover:border-[#bbf7d0] transition-colors hover:shadow-md">
+                <div className="text-3xl font-bold font-mono text-[#4ade80] mb-4">
+                  {s.num}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-[15px] font-semibold text-[#78716c]">
-            <span className="flex items-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-[#d97706]" strokeWidth={2.5} />
-              Без загрузки на сервер
-            </span>
-            <span className="flex items-center gap-2.5">
-              <Lock className="w-5 h-5 text-[#d97706]" strokeWidth={2.5} />
-              Данные не покидают устройство
-            </span>
+                <div className="flex items-center gap-2 mb-3">
+                  <s.icon className="w-5 h-5 text-[#16a34a]" strokeWidth={2} />
+                  <h4 className="font-semibold text-[#14532d] text-lg">{s.title}</h4>
+                </div>
+                <p className="text-[#15803d] text-sm leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Trust row */}
+      <section className="bg-white border-t border-[#dcfce7] py-8 px-4 mt-auto">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm font-medium text-[#15803d] text-center">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-[#22c55e]" />
+            <span>Без загрузки на сервер</span>
+          </div>
+          <span className="hidden sm:inline text-[#bbf7d0] font-bold">&middot;</span>
+          <div className="flex items-center gap-2">
+            <Lock className="w-5 h-5 text-[#22c55e]" />
+            <span>Данные не покидают устройство</span>
+          </div>
+          <span className="hidden sm:inline text-[#bbf7d0] font-bold">&middot;</span>
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-[#22c55e]" />
+            <span>Мгновенный результат</span>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-[#1c1917] border-t border-[#292524] py-10 mt-auto">
+      <footer className="bg-[#14532d] py-6">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-[#a8a29e] text-sm font-medium mb-4">
+          <p className="text-[#bbf7d0] text-xs font-medium">
             Вся обработка в браузере. Данные не сохраняются. Бесплатно.
-          </p>
-          <p className="text-[#78716c] text-xs max-w-xl mx-auto font-medium">
-            Только оценка. Точность зависит от эталонного измерения и угла съёмки.
           </p>
         </div>
       </footer>
