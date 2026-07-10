@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Volume Estimator"
+version = "1.0.0"
+id = "artifacts/volume-estimator"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19100
+
+[services.development]
+run = "pnpm --filter @workspace/volume-estimator run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/volume-estimator", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/volume-estimator/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19100"
+BASE_PATH = "/"
