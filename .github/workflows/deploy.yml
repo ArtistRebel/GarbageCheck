@@ -35,7 +35,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: artifacts/volume-estimator/dist
+          path: artifacts/volume-estimator/dist/public
 
   deploy:
     needs: build
