@@ -26,6 +26,8 @@ jobs:
 
       - run: pnpm run build
         working-directory: artifacts/volume-estimator
+        env:
+          PORT: 5173
 
       - uses: actions/upload-pages-artifact@v3
         with:
