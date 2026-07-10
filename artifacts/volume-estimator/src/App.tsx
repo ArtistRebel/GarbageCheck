@@ -168,7 +168,7 @@ function LandingPage({ onImage }: { onImage: (file: File) => void }) {
 
       {/* Trust badges */}
       <div className="mt-10 text-center text-xs text-[#5a7a67]">
-        Без загрузки данных · Приватность по умолчанию · Бесплатно
+        Расчет является ориентировочным. Для настройки масштаба используйте объект на фото с известным размером (покрышка, матрас и т.д.)
       </div>
     </div>
   );
