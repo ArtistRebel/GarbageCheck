@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install
+      - run: corepack enable && pnpm install
         working-directory: artifacts/volume-estimator
 
-      - run: npm run build
+      - run: pnpm run build
         working-directory: artifacts/volume-estimator
 
       - uses: actions/upload-pages-artifact@v3
