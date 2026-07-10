@@ -700,12 +700,12 @@ export default function AnnotatorCanvas({
             Длина отрезка:
           </span>
          <input
-  type="number"
-  min={0.01}
-  step={0.01}
-  value={metersInput || measurement.meters}
+  type="text"
+  value={metersInput !== "" ? metersInput : String(measurement.meters)}
   onFocus={() => setMetersInput(String(measurement.meters))}
-  onChange={(e) => setMetersInput(e.target.value)}
+  onChange={(e) => {
+    setMetersInput(e.target.value);
+  }}
   onBlur={() => {
     const value = parseFloat(metersInput.replace(",", "."));
 
@@ -714,13 +714,13 @@ export default function AnnotatorCanvas({
         ...measurement,
         meters: Math.max(0.01, value),
       });
-      setMetersInput("");
-    } else {
-      setMetersInput("");
     }
+
+    setMetersInput("");
   }}
   className="w-24 px-2 py-1 rounded-lg border border-[#cfe0d6] text-sm font-semibold text-[#1a2e22] bg-white focus:outline-none focus:ring-2 focus:ring-[#2d7d4e]/20"
 />
+
           <span className="text-sm text-[#5a7a67]">м</span>
           <button
             onClick={() => setMeasurement(null)}
