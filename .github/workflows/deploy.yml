@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 22
 
-      - run: corepack enable && pnpm install
+      - run: corepack enable && pnpm install --dangerously-allow-all-builds
         working-directory: artifacts/volume-estimator
 
       - run: pnpm run build
