@@ -206,6 +206,7 @@ export default function ResultsPanel({
       {/* Add another photo of the same навал */}
       {canCompute && onAddAnotherPhoto && (
         <button
+          type="button"
           onClick={onAddAnotherPhoto}
           className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea] transition-colors bg-white shadow-sm"
         >
