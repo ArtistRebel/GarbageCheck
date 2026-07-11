@@ -32,6 +32,7 @@ type Props = {
 };
 
 const HIT_RADIUS = 12;
+const TOUCH_HIT_RADIUS = 22;
 const CLOSE_THRESHOLD = 14;
 const LAYER_COLORS = [
   "#2d7d4e",
@@ -334,12 +335,40 @@ export default function AnnotatorCanvas({
     imgLoaded,
   ]);
 
-  // ---- Mouse handlers ----
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  // ---- Pointer handlers (mouse, touch, stylus) ----
+  const activePointerIdRef = useRef<number | null>(null);
+
+  const getHitRadius = useCallback(
+    (pointerType: string) =>
+      pointerType === "mouse" ? HIT_RADIUS : TOUCH_HIT_RADIUS,
+    [],
+  );
+
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      // Ignore secondary touches so one finger drives drawing/dragging.
+      if (!e.isPrimary) return;
+      if (
+        activePointerIdRef.current !== null &&
+        activePointerIdRef.current !== e.pointerId
+      ) {
+        return;
+      }
+
       const pt = toImageCoords(e.clientX, e.clientY);
+      const radius = getHitRadius(e.pointerType);
+
+      const capture = () => {
+        activePointerIdRef.current = e.pointerId;
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          // Ignore — pointer capture is best-effort.
+        }
+      };
 
       if (tool === "polygon") {
+        capture();
         // Check if clicking near first point to close
         if (draftPoints.length >= 3) {
           const firstCanvas = toCanvasCoords(draftPoints[0]);
@@ -348,7 +377,7 @@ export default function AnnotatorCanvas({
             firstCanvas.x - mCanvas.x,
             firstCanvas.y - mCanvas.y,
           );
-          if (d < CLOSE_THRESHOLD) {
+          if (d < Math.max(CLOSE_THRESHOLD, radius)) {
             finishPolygon();
             return;
           }
@@ -365,15 +394,18 @@ export default function AnnotatorCanvas({
           const mc = toCanvasCoords(pt);
           const d1 = Math.hypot(p1c.x - mc.x, p1c.y - mc.y);
           const d2 = Math.hypot(p2c.x - mc.x, p2c.y - mc.y);
-          if (d1 < HIT_RADIUS) {
+          if (d1 < radius) {
+            capture();
             setDragMeasure(0);
             return;
           }
-          if (d2 < HIT_RADIUS) {
+          if (d2 < radius) {
+            capture();
             setDragMeasure(1);
             return;
           }
         }
+        capture();
         setMeasureDraft({ start: pt, end: pt });
         return;
       }
@@ -384,7 +416,8 @@ export default function AnnotatorCanvas({
           for (let i = 0; i < layer.polygon.length; i++) {
             const vc = toCanvasCoords(layer.polygon[i]);
             const mc = toCanvasCoords(pt);
-            if (Math.hypot(vc.x - mc.x, vc.y - mc.y) < HIT_RADIUS) {
+            if (Math.hypot(vc.x - mc.x, vc.y - mc.y) < radius) {
+              capture();
               setDragVertex({ layerId: layer.id, index: i });
               setActiveLayerId(layer.id);
               return;
@@ -404,11 +437,13 @@ export default function AnnotatorCanvas({
           const p1c = toCanvasCoords(measurement.p1);
           const p2c = toCanvasCoords(measurement.p2);
           const mc = toCanvasCoords(pt);
-          if (Math.hypot(p1c.x - mc.x, p1c.y - mc.y) < HIT_RADIUS) {
+          if (Math.hypot(p1c.x - mc.x, p1c.y - mc.y) < radius) {
+            capture();
             setDragMeasure(0);
             return;
           }
-          if (Math.hypot(p2c.x - mc.x, p2c.y - mc.y) < HIT_RADIUS) {
+          if (Math.hypot(p2c.x - mc.x, p2c.y - mc.y) < radius) {
+            capture();
             setDragMeasure(1);
             return;
           }
@@ -424,11 +459,20 @@ export default function AnnotatorCanvas({
       toImageCoords,
       toCanvasCoords,
       setActiveLayerId,
+      getHitRadius,
     ],
   );
 
-  const onMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (
+        activePointerIdRef.current !== null &&
+        activePointerIdRef.current !== e.pointerId
+      ) {
+        return;
+      }
+      if (!e.isPrimary && activePointerIdRef.current === null) return;
+
       const pt = toImageCoords(e.clientX, e.clientY);
       setMouse(pt);
 
@@ -456,8 +500,8 @@ export default function AnnotatorCanvas({
         return;
       }
 
-      // Hover detection for select tool
-      if (tool === "select") {
+      // Hover detection for select tool (mouse/pen only — touch has no hover)
+      if (tool === "select" && e.pointerType !== "touch") {
         let foundId: string | null = null;
         for (let i = layers.length - 1; i >= 0; i--) {
           const layer = layers[i];
@@ -487,25 +531,52 @@ export default function AnnotatorCanvas({
     ],
   );
 
-  const onMouseUp = useCallback(() => {
-    if (measureDraft) {
-      const d = Math.hypot(
-        measureDraft.start.x - measureDraft.end.x,
-        measureDraft.start.y - measureDraft.end.y,
-      );
-      if (d > 5) {
-        setMeasurement({
-          id: uid(),
-          p1: measureDraft.start,
-          p2: measureDraft.end,
-          meters: 1.0,
-        });
+  const releasePointer = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (activePointerIdRef.current === e.pointerId) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        // Ignore — capture may already be released.
       }
-      setMeasureDraft(null);
+      activePointerIdRef.current = null;
     }
-    setDragVertex(null);
-    setDragMeasure(null);
-  }, [measureDraft, setMeasurement]);
+  }, []);
+
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (measureDraft) {
+        const d = Math.hypot(
+          measureDraft.start.x - measureDraft.end.x,
+          measureDraft.start.y - measureDraft.end.y,
+        );
+        if (d > 5) {
+          setMeasurement({
+            id: uid(),
+            p1: measureDraft.start,
+            p2: measureDraft.end,
+            meters: 1.0,
+          });
+        }
+        setMeasureDraft(null);
+      }
+      setDragVertex(null);
+      setDragMeasure(null);
+      releasePointer(e);
+    },
+    [measureDraft, setMeasurement, releasePointer],
+  );
+
+  // Pointer cancel (e.g. OS gesture interrupt) — clear drag state without
+  // committing an in-progress measurement.
+  const onPointerCancel = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      setMeasureDraft(null);
+      setDragVertex(null);
+      setDragMeasure(null);
+      releasePointer(e);
+    },
+    [releasePointer],
+  );
 
   const finishPolygon = useCallback(() => {
     if (draftPoints.length < 3) return;
@@ -590,7 +661,7 @@ export default function AnnotatorCanvas({
             <button
               key={t.id}
               onClick={() => setTool(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[40px] sm:min-h-0 ${
                 tool === t.id
                   ? "bg-[#2d7d4e] text-white"
                   : "text-[#5a7a67] hover:bg-[#e6f0ea]"
@@ -607,21 +678,21 @@ export default function AnnotatorCanvas({
           <>
             <button
               onClick={undoLastPoint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#5a7a67] hover:bg-[#e6f0ea]"
+              className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium text-[#5a7a67] hover:bg-[#e6f0ea] min-h-[40px] sm:min-h-0"
             >
               <Undo2 className="w-4 h-4" /> Отменить точку
             </button>
             {draftPoints.length >= 3 && (
               <button
                 onClick={finishPolygon}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-[#2d7d4e] text-white hover:bg-[#1a3329]"
+                className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium bg-[#2d7d4e] text-white hover:bg-[#1a3329] min-h-[40px] sm:min-h-0"
               >
                 <Check className="w-4 h-4" /> Завершить
               </button>
             )}
             <button
               onClick={cancelDraft}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#5a7a67] hover:bg-[#e6f0ea]"
+              className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium text-[#5a7a67] hover:bg-[#e6f0ea] min-h-[40px] sm:min-h-0"
             >
               <RotateCcw className="w-4 h-4" /> Сбросить
             </button>
@@ -630,13 +701,13 @@ export default function AnnotatorCanvas({
         <div className="ml-auto flex gap-1">
           <button
             onClick={startNewPile}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea]"
+            className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea] min-h-[40px] sm:min-h-0"
           >
             <Plus className="w-4 h-4" /> Добавить кучу
           </button>
           <button
             onClick={resetAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50"
+            className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 min-h-[40px] sm:min-h-0"
           >
             <Trash2 className="w-4 h-4" /> Очистить всё
           </button>
@@ -652,16 +723,21 @@ export default function AnnotatorCanvas({
         {imgLoaded && displaySize.w > 0 ? (
           <canvas
             ref={canvasRef}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={() => {
-              setMouse(null);
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
+            onPointerLeave={(e) => {
               setHoverLayerId(null);
-              onMouseUp();
+              // Only clear the crosshair/drag state for hover (mouse/pen);
+              // an active touch/captured drag keeps receiving move events
+              // even if the pointer briefly leaves the element bounds.
+              if (activePointerIdRef.current === null) {
+                setMouse(null);
+              }
             }}
-            className="cursor-crosshair"
-            style={{ display: "block", maxWidth: "100%" }}
+            className="cursor-crosshair touch-none select-none"
+            style={{ display: "block", maxWidth: "100%", touchAction: "none" }}
           />
         ) : (
           <div className="py-20 text-slate-400 text-sm">Загрузка изображения…</div>
@@ -724,7 +800,7 @@ export default function AnnotatorCanvas({
           <span className="text-sm text-[#5a7a67]">м</span>
           <button
             onClick={() => setMeasurement(null)}
-            className="ml-auto text-sm text-[#5a7a67] hover:text-red-500 font-medium transition-colors"
+            className="ml-auto text-sm text-[#5a7a67] hover:text-red-500 font-medium transition-colors px-2 py-2 sm:py-1 min-h-[40px] sm:min-h-0 flex items-center"
           >
             Удалить
           </button>
@@ -770,7 +846,7 @@ export default function AnnotatorCanvas({
                   </span>
                   <button
                     onClick={() => deleteLayer(layer.id)}
-                    className="text-[#5a7a67] hover:text-red-500 shrink-0"
+                    className="text-[#5a7a67] hover:text-red-500 shrink-0 p-2 -m-1 min-w-[36px] min-h-[36px] flex items-center justify-center"
                     aria-label="Удалить"
                   >
                     <Trash2 className="w-4 h-4" />
