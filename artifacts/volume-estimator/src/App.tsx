@@ -3,7 +3,9 @@ import { Layers } from "lucide-react";
 import UploadZone from "./components/UploadZone";
 import AnnotatorCanvas from "./components/AnnotatorCanvas";
 import ResultsPanel from "./components/ResultsPanel";
-import type { FootprintLayer, Measurement } from "./lib/volume";
+import type { FootprintLayer, Measurement, PhotoEstimate } from "./lib/volume";
+import { computeVolume, totalVolume } from "./lib/volume";
+import { uid } from "./lib/id";
 
 type Phase = "upload" | "annotate";
 
@@ -14,6 +16,9 @@ function App() {
   const [measurement, setMeasurement] = useState<Measurement | null>(null);
   const [activeLayerId, setActiveLayerId] = useState<string | null>(null);
   const [fillKey, setFillKey] = useState("mixed");
+  // Additional photos of the same навал, each calculated independently,
+  // used to combine several angle shots into one final estimate.
+  const [photos, setPhotos] = useState<PhotoEstimate[]>([]);
 
   const handleImage = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
@@ -27,8 +32,26 @@ function App() {
     setLayers([]);
     setMeasurement(null);
     setActiveLayerId(null);
+    setPhotos([]);
     setPhase("upload");
   }, [imageSrc]);
+
+  // Save the current photo's independently-computed volume, then return to
+  // the upload screen for another angle of the same навал.
+  const handleAddAnotherPhoto = useCallback(() => {
+    if (!measurement || layers.length === 0) return;
+    const hasHeights = layers.every((l) => l.heightM > 0);
+    if (!hasHeights) return;
+    const results = layers.map((l) => computeVolume(l, measurement, fillKey));
+    const { m3 } = totalVolume(results);
+    setPhotos((prev) => [...prev, { id: uid(), volumeM3: m3 }]);
+    if (imageSrc) URL.revokeObjectURL(imageSrc);
+    setImageSrc(null);
+    setLayers([]);
+    setMeasurement(null);
+    setActiveLayerId(null);
+    setPhase("upload");
+  }, [measurement, layers, fillKey, imageSrc]);
 
   return (
     <div className="min-h-screen bg-[#f4f7f5] flex flex-col font-sans">
@@ -87,6 +110,8 @@ function App() {
                   measurement={measurement}
                   fillKey={fillKey}
                   setFillKey={setFillKey}
+                  photos={photos}
+                  onAddAnotherPhoto={handleAddAnotherPhoto}
                 />
               </aside>
             </div>
@@ -107,7 +132,7 @@ function LandingPage({ onImage }: { onImage: (file: File) => void }) {
   const steps = [
     {
       title: "Загрузите фотографию",
-      desc: "Выберите снимок с кучей мусора или перетащите его в окно",
+      desc: "Выберите снимок с навалом мусора или перетащите его в окно",
     },
     {
       title: "Задайте масштаб",
@@ -115,11 +140,11 @@ function LandingPage({ onImage }: { onImage: (file: File) => void }) {
     },
     {
       title: "Обведите контур",
-      desc: "Кликайте по краям кучи, добавляя точки. Замкните контур нажатием на первую точку или клавишей Enter",
+      desc: "Кликайте по краям навала, добавляя точки. Замкните контур нажатием на первую точку или клавишей Enter",
     },
     {
       title: "Получите объём",
-      desc: "Укажите высоту кучи — инструмент рассчитает объём в м³ и необходимое число рейсов",
+      desc: "Укажите высоту навала — инструмент рассчитает объём в м³ и необходимое число рейсов",
     },
   ];
 
@@ -133,7 +158,7 @@ function LandingPage({ onImage }: { onImage: (file: File) => void }) {
         <h2 className="text-4xl sm:text-5xl font-semibold text-[#1a2e22] tracking-tight mb-4 leading-tight">
           Рассчитайте объём
           <br />
-          <span className="text-[#2d7d4e]">мусорной кучи</span>
+          <span className="text-[#2d7d4e]">мусорного навала</span>
         </h2>
         <p className="text-[#5a7a67] text-base sm:text-lg max-w-lg mx-auto leading-relaxed">
           Загрузите снимок, обведите контур, задайте масштаб — получите объём в м³. Всё вычисляется прямо в браузере, данные никуда не передаются.

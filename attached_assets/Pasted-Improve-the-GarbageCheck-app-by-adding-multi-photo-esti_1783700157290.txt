@@ -1,0 +1,96 @@
+Improve the GarbageCheck app by adding multi-photo estimation for the same waste pile (naval).
+
+Important:
+- The user interface language is Russian.
+- All new and modified UI text must be in Russian.
+- In the UI, replace the word "куча" with the more professional term "навал".
+- Keep code structure and internal variable names unchanged unless necessary.
+- Do not rewrite the application.
+- Do not change the existing volume calculation algorithm.
+- Do not break the current single-photo workflow.
+
+Current workflow:
+Фото → контур навала → высота навала → масштаб → плотность → расчёт объёма
+
+Goal:
+Allow users to upload several photos of the same навал from different angles to improve estimation accuracy.
+
+New user flow:
+
+1. User uploads the first photo.
+2. User draws the contour of the навал.
+3. User enters height, scale and density.
+4. App calculates the estimated volume.
+5. User can choose:
+"Добавить фото этого же навала"
+
+6. User uploads another view of the same навал.
+7. User repeats the contour and measurements if needed.
+8. App calculates each photo independently.
+9. App combines the results into one final estimate.
+
+Result example in Russian:
+
+Расчёт по фотографиям:
+
+Фото 1: 18.5 м³
+Фото 2: 20.1 м³
+Фото 3: 19.3 м³
+
+Ориентировочный объём навала:
+≈ 19.3 м³
+
+Диапазон оценки:
+18.5–20.1 м³
+
+Добавить пояснение:
+
+"Для повышения точности используйте фотографии одного навала с разных сторон."
+
+Implementation:
+
+- Store multiple photo calculations in an array/list.
+- Keep each photo calculation independent.
+- Calculate final estimation using average or median value.
+- Show the range between minimum and maximum results.
+- Do not create a 3D model.
+- Do not merge images.
+- Do not change the existing math.
+
+UI changes:
+
+Replace:
+"куча"
+
+with:
+
+"навал"
+
+Examples:
+"Обведите контур навала"
+"Высота навала"
+"Добавить фото этого же навала"
+"Ориентировочный объём навала"
+
+Before coding:
+
+1. Inspect the existing project structure.
+2. Identify:
+   - photo upload logic;
+   - contour drawing component;
+   - volume calculation logic;
+   - UI text locations.
+3. Make minimal changes only.
+
+After implementation test:
+
+Scenario 1:
+- Single photo.
+- Existing workflow works exactly as before.
+
+Scenario 2:
+- Two or three photos of the same навал.
+- Each photo produces an estimate.
+- Final combined estimate is displayed.
+- Russian interface texts are correct.
+- Mobile version remains functional.

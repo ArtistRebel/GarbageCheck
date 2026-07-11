@@ -92,3 +92,33 @@ export function totalVolume(results: VolumeResult[]): {
 export function getLayerBox(layer: FootprintLayer): Box | null {
   return boundingBox(layer.polygon);
 }
+
+// ---- Multi-photo estimation for the same waste pile (навал) ----
+
+export type PhotoEstimate = {
+  id: string;
+  volumeM3: number;
+};
+
+export function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+  return sorted[mid];
+}
+
+export function combinePhotoVolumes(volumes: number[]): {
+  estimate: number;
+  min: number;
+  max: number;
+} {
+  if (volumes.length === 0) return { estimate: 0, min: 0, max: 0 };
+  return {
+    estimate: median(volumes),
+    min: Math.min(...volumes),
+    max: Math.max(...volumes),
+  };
+}

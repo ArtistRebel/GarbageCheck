@@ -585,7 +585,7 @@ export default function AnnotatorCanvas({
       polygon: [...draftPoints],
       heightPx: 0,
       heightM: 0,
-      label: `Куча ${layers.length + 1}`,
+      label: `Навал ${layers.length + 1}`,
     };
     setLayers([...layers, newLayer]);
     setActiveLayerId(newLayer.id);
@@ -703,7 +703,7 @@ export default function AnnotatorCanvas({
             onClick={startNewPile}
             className="flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea] min-h-[40px] sm:min-h-0"
           >
-            <Plus className="w-4 h-4" /> Добавить кучу
+            <Plus className="w-4 h-4" /> Добавить навал
           </button>
           <button
             onClick={resetAll}
@@ -748,7 +748,7 @@ export default function AnnotatorCanvas({
       <div className="flex flex-wrap items-center gap-3 text-xs text-[#5a7a67]">
         {tool === "polygon" && (
           <span>
-            Кликайте по контуру кучи, добавляя точки. Первая точка замыкает полигон (Enter).
+            Кликайте по контуру навала, добавляя точки. Первая точка замыкает полигон (Enter).
           </span>
         )}
         {tool === "measure" && (
@@ -758,7 +758,7 @@ export default function AnnotatorCanvas({
         )}
         {tool === "select" && (
           <span>
-            Выберите кучу. Перетаскивайте точки для корректировки контура.
+            Выберите навал. Перетаскивайте точки для корректировки контура.
           </span>
         )}
         {draftPoints.length > 0 && (
@@ -860,7 +860,7 @@ export default function AnnotatorCanvas({
                   <div className="mt-3 pt-3 border-t border-[#cfe0d6] space-y-3">
                     <div>
                       <label className="text-xs font-medium text-[#5a7a67] block mb-1">
-                        Высота кучи
+                        Высота навала
                       </label>
                       <input
                         type="number"

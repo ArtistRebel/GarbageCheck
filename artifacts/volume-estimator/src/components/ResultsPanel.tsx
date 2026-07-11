@@ -1,6 +1,11 @@
-import { Truck, Layers, Info, Sparkles } from "lucide-react";
-import type { FootprintLayer, Measurement, VolumeResult } from "../lib/volume";
-import { computeVolume, totalVolume } from "../lib/volume";
+import { Camera, Truck, Layers, Info, Sparkles, Images } from "lucide-react";
+import type {
+  FootprintLayer,
+  Measurement,
+  PhotoEstimate,
+  VolumeResult,
+} from "../lib/volume";
+import { computeVolume, totalVolume, combinePhotoVolumes } from "../lib/volume";
 import {
   formatM2,
   formatM3,
@@ -13,6 +18,8 @@ type Props = {
   measurement: Measurement | null;
   fillKey: string;
   setFillKey: (k: string) => void;
+  photos?: PhotoEstimate[];
+  onAddAnotherPhoto?: () => void;
 };
 
 const LOCAL_FILL_LABELS = [
@@ -26,6 +33,8 @@ export default function ResultsPanel({
   measurement,
   fillKey,
   setFillKey,
+  photos = [],
+  onAddAnotherPhoto,
 }: Props) {
   const hasMeasurement = !!measurement;
   const hasLayers = layers.length > 0;
@@ -37,10 +46,10 @@ export default function ResultsPanel({
         <Info className="w-8 h-8 text-[#a8c9b4] mx-auto mb-2" />
         <p className="text-sm text-[#5a7a67]">
           {!hasMeasurement && !hasLayers
-            ? "Задайте масштаб и обведите кучу, чтобы увидеть расчёт."
+            ? "Задайте масштаб и обведите навал, чтобы увидеть расчёт."
             : !hasMeasurement
               ? "Задайте масштаб — нарисуйте отрезок вдоль объекта известного размера."
-              : "Обведите контур хотя бы одной кучи."}
+              : "Обведите контур хотя бы одного навала."}
         </p>
       </div>
     );
@@ -51,6 +60,14 @@ export default function ResultsPanel({
   );
   const totals = totalVolume(results);
   const canCompute = hasHeights;
+
+  // Combine this photo's volume with any previously saved photos of the
+  // same навал (each photo is calculated fully independently).
+  const allPhotoVolumes = canCompute
+    ? [...photos.map((p) => p.volumeM3), totals.m3]
+    : photos.map((p) => p.volumeM3);
+  const isMultiPhoto = allPhotoVolumes.length >= 2;
+  const combined = isMultiPhoto ? combinePhotoVolumes(allPhotoVolumes) : null;
 
   return (
     <div className="space-y-4">
@@ -144,6 +161,63 @@ export default function ResultsPanel({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Multi-photo combined estimate */}
+      {isMultiPhoto && combined && (
+        <div className="bg-white rounded-xl border border-[#cfe0d6] p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3 text-[#2d7d4e]">
+            <Images className="w-5 h-5" />
+            <h3 className="font-semibold tracking-tight text-[#1a2e22]">
+              Расчёт по фотографиям
+            </h3>
+          </div>
+          <div className="space-y-1.5 mb-4">
+            {allPhotoVolumes.map((v, i) => {
+              const isCurrent = canCompute && i === allPhotoVolumes.length - 1;
+              return (
+                <div
+                  key={i}
+                  className="flex items-center justify-between text-sm px-3 py-2 rounded-lg bg-[#f4f7f5]"
+                >
+                  <span className="text-[#5a7a67]">
+                    Фото {i + 1}
+                    {isCurrent ? " (текущее)" : ""}
+                  </span>
+                  <span className="font-medium text-[#1a2e22]">
+                    {formatM3(v)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="border-t border-[#cfe0d6] pt-3 text-center">
+            <p className="text-xs text-[#5a7a67]">Ориентировочный объём навала</p>
+            <p className="text-2xl font-semibold text-[#2d7d4e] mt-0.5">
+              ≈ {formatM3(combined.estimate)}
+            </p>
+            <p className="text-xs text-[#5a7a67] mt-2">
+              Диапазон оценки: {formatM3(combined.min)}–{formatM3(combined.max)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Add another photo of the same навал */}
+      {canCompute && onAddAnotherPhoto && (
+        <button
+          onClick={onAddAnotherPhoto}
+          className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea] transition-colors bg-white shadow-sm"
+        >
+          <Camera className="w-4 h-4" />
+          Добавить фото этого же навала
+        </button>
+      )}
+
+      {!isMultiPhoto && canCompute && (
+        <p className="text-xs text-[#5a7a67] text-center leading-relaxed">
+          Для повышения точности используйте фотографии одного навала с разных сторон.
+        </p>
       )}
 
       {/* Disclaimer */}
