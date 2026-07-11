@@ -1,0 +1,47 @@
+Improve the mobile UX of the GarbageCheck app. Do not rewrite the app or change the volume calculation logic. Only fix mobile interaction issues.
+
+Current issues:
+1. When drawing the pile outline on a mobile device, the image slightly moves under the finger.
+2. When entering numeric values (for example pile height), the existing value is not immediately replaced. Users need to delete it manually.
+3. The app already works on mobile and calculates approximately. Keep all existing calculation and scaling logic.
+
+Tasks:
+
+1. Fix image movement during contour drawing:
+- Prevent browser gestures (scrolling, zooming, panning) inside the image drawing area.
+- Make touch/pointer input dedicated to drawing only.
+- The image must stay completely fixed while the user draws the contour.
+- The contour points/line should appear exactly where the finger touches.
+
+Check:
+- touch-action: none;
+- pointer events / touch events handling;
+- preventDefault where needed.
+
+2. Improve numeric input on mobile:
+- Use proper numeric input fields with mobile keyboard support.
+- When a user taps a numeric field, automatically select the current value so new input replaces it.
+- Do not keep measurement units inside the input value. Example:
+  Good: [1.5] m
+  Bad: [1.5 m]
+- Avoid accidental concatenation with the previous value.
+
+3. Improve mobile usability:
+- Make buttons and controls comfortable for touch.
+- Ensure the mobile keyboard does not hide important controls.
+- Test on both Android and iOS layouts if possible.
+
+Important:
+- Keep the existing algorithm unchanged.
+- Keep the current workflow:
+  upload photo → outline pile → enter height → set scale → choose density → calculate volume.
+- Make minimal code changes.
+- First inspect the current code structure before editing.
+
+After changes, test this scenario:
+1. Open the app on a phone.
+2. Upload a pile photo.
+3. Draw the contour with a finger.
+4. Confirm the image does not move.
+5. Enter height and replace the default value easily.
+6. Calculate the volume successfully.

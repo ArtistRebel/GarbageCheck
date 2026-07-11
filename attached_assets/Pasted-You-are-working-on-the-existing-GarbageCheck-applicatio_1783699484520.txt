@@ -1,0 +1,119 @@
+You are working on the existing GarbageCheck application.
+
+IMPORTANT:
+This app is already working. Do NOT redesign it, do NOT change the visual style, do NOT change the layout, and do NOT rewrite existing functionality.
+
+The goal is ONLY to improve mobile usability and add a simple camera option.
+
+Before making changes:
+1. Inspect the existing code structure.
+2. Understand how image upload, contour drawing, scaling, density selection, and volume calculation currently work.
+3. Make minimal changes only.
+4. Preserve all existing behavior.
+
+====================================
+
+TASK 1 — Fix mobile contour drawing behavior
+
+Problem:
+On mobile devices, when the user draws the pile outline with a finger, the image slightly moves or shifts.
+
+Expected behavior:
+- The image must stay completely fixed while drawing.
+- Touch input should only create the contour.
+- The contour should appear exactly where the user touches.
+- No page scrolling, zooming, or accidental movement should happen inside the drawing area.
+
+Implementation:
+- Check and improve touch/pointer event handling.
+- Use appropriate mobile settings such as:
+  - touch-action: none;
+  - pointer events;
+  - preventDefault where necessary.
+
+Do not change:
+- contour logic;
+- calculation logic;
+- image processing logic.
+
+====================================
+
+TASK 2 — Improve numeric input on mobile
+
+Problem:
+When entering values like pile height, the existing number is not replaced immediately. Users have to manually delete the old value.
+
+Expected behavior:
+- Numeric fields should work naturally on mobile.
+- When the user taps a numeric field, the current value should be automatically selected.
+- New typing should replace the old value.
+- Use mobile-friendly numeric keyboard.
+
+Important:
+Do not put measurement units inside the input value.
+
+Example:
+GOOD:
+[ 1.5 ] m
+
+BAD:
+[ 1.5 m ]
+
+Do not change the calculation formulas.
+
+====================================
+
+TASK 3 — Add direct camera capture on mobile
+
+Goal:
+Allow users to take a photo directly from their phone camera.
+
+Current workflow:
+Upload photo → draw contour → enter height → set scale → choose density → calculate volume
+
+New workflow:
+User can either:
+- take a new photo with the phone camera;
+- choose an existing photo from the gallery.
+
+Requirements:
+- Add a "Take photo" option for mobile devices.
+- Keep the existing gallery upload option.
+- Use the rear camera by default when available.
+- After taking a photo, continue using the existing workflow.
+- Do not modify image processing or calculation logic.
+
+A simple browser camera capture implementation is enough.
+
+====================================
+
+TASK 4 — Mobile usability check
+
+Check that:
+- buttons remain in the existing design style;
+- controls are easy to tap on a phone;
+- the mobile keyboard does not hide important controls;
+- the app works on typical Android and iPhone browsers.
+
+====================================
+
+VERY IMPORTANT:
+Do not:
+- redesign the interface;
+- change colors, fonts, spacing, or branding;
+- change the calculation algorithm;
+- change the scale estimation logic;
+- remove existing features;
+- refactor large parts of the application unnecessarily.
+
+This is a small mobile improvement update, not a rebuild.
+
+After implementation, test:
+
+1. Open GarbageCheck on a smartphone.
+2. Take a photo directly from the camera.
+3. Draw the pile outline with a finger.
+4. Confirm the image stays fixed.
+5. Enter height and replace the default value easily.
+6. Complete the calculation.
+7. Confirm the final volume result is unchanged compared to the previous version.

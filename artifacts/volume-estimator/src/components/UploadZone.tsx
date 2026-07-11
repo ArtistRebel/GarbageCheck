@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Upload, ClipboardPaste, X, Lock } from "lucide-react";
+import { Upload, Camera, X, Lock } from "lucide-react";
 
 type Props = {
   onImage: (file: File) => void;
@@ -7,6 +7,7 @@ type Props = {
 
 export default function UploadZone({ onImage }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,6 +106,40 @@ export default function UploadZone({ onImage }: Props) {
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Direct camera capture (mobile) + explicit gallery pick */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            cameraInputRef.current?.click();
+          }}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-[#2d7d4e] text-white hover:bg-[#1a3329] transition-colors"
+        >
+          <Camera className="w-4 h-4" />
+          Сделать фото
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            inputRef.current?.click();
+          }}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-lg text-sm font-medium border border-[#2d7d4e] text-[#2d7d4e] hover:bg-[#e6f0ea] transition-colors"
+        >
+          <Upload className="w-4 h-4" />
+          Выбрать из галереи
+        </button>
       </div>
       {error && (
         <div className="mt-3 flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2.5 rounded-lg border border-red-100">

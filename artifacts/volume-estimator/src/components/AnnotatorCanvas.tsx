@@ -777,8 +777,12 @@ export default function AnnotatorCanvas({
           </span>
          <input
   type="text"
+  inputMode="decimal"
   value={metersInput !== "" ? metersInput : String(measurement.meters)}
-  onFocus={() => setMetersInput(String(measurement.meters))}
+  onFocus={(e) => {
+    setMetersInput(String(measurement.meters));
+    e.target.select();
+  }}
   onChange={(e) => {
     setMetersInput(e.target.value);
   }}
@@ -794,7 +798,7 @@ export default function AnnotatorCanvas({
 
     setMetersInput("");
   }}
-  className="w-24 px-2 py-1 rounded-lg border border-[#cfe0d6] text-sm font-semibold text-[#1a2e22] bg-white focus:outline-none focus:ring-2 focus:ring-[#2d7d4e]/20"
+  className="w-24 px-2 py-2 sm:py-1 rounded-lg border border-[#cfe0d6] text-sm font-semibold text-[#1a2e22] bg-white focus:outline-none focus:ring-2 focus:ring-[#2d7d4e]/20"
 />
 
           <span className="text-sm text-[#5a7a67]">м</span>
@@ -860,10 +864,12 @@ export default function AnnotatorCanvas({
                       </label>
                       <input
                         type="number"
+                        inputMode="decimal"
                         min={0}
                         step={0.1}
                         value={layer.heightM || ""}
                         placeholder="Высота, м"
+                        onFocus={(e) => e.target.select()}
                         onChange={(e) => {
                           const v = parseFloat(e.target.value) || 0;
                           setLayers(
@@ -874,7 +880,7 @@ export default function AnnotatorCanvas({
                             ),
                           );
                         }}
-                        className="w-32 px-2 py-1.5 rounded-lg border border-[#cfe0d6] text-sm focus:outline-none focus:border-[#2d7d4e] focus:ring-1 focus:ring-[#2d7d4e]"
+                        className="w-32 px-2 py-2 sm:py-1.5 rounded-lg border border-[#cfe0d6] text-sm focus:outline-none focus:border-[#2d7d4e] focus:ring-1 focus:ring-[#2d7d4e]"
                       />
                     </div>
                   </div>
