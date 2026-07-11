@@ -31,6 +31,15 @@ type Props = {
   setFillKey: (k: string) => void;
 };
 
+// Accepts both "," and "." as decimal separators, and a leading separator
+// (e.g. ",2" or ".2") as shorthand for a value below 1 (e.g. "0.2").
+function normalizeDecimalInput(raw: string): number {
+  let s = raw.trim().replace(",", ".");
+  if (s.startsWith(".")) s = "0" + s;
+  const v = parseFloat(s);
+  return isNaN(v) ? 0 : v;
+}
+
 const HIT_RADIUS = 12;
 const TOUCH_HIT_RADIUS = 22;
 const CLOSE_THRESHOLD = 14;
@@ -72,6 +81,7 @@ export default function AnnotatorCanvas({
   } | null>(null);
   const [dragMeasure, setDragMeasure] = useState<0 | 1 | null>(null);
   const [metersInput, setMetersInput] = useState("");
+  const [heightInputs, setHeightInputs] = useState<Record<string, string>>({});
 
   // Load image
   useEffect(() => {
@@ -863,15 +873,30 @@ export default function AnnotatorCanvas({
                         Высота навала
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         inputMode="decimal"
-                        min={0}
-                        step={0.1}
-                        value={layer.heightM || ""}
+                        value={
+                          heightInputs[layer.id] !== undefined
+                            ? heightInputs[layer.id]
+                            : layer.heightM || ""
+                        }
                         placeholder="Высота, м"
-                        onFocus={(e) => e.target.select()}
+                        onFocus={(e) => {
+                          setHeightInputs((prev) => ({
+                            ...prev,
+                            [layer.id]: layer.heightM ? String(layer.heightM) : "",
+                          }));
+                          e.target.select();
+                        }}
                         onChange={(e) => {
-                          const v = parseFloat(e.target.value) || 0;
+                          setHeightInputs((prev) => ({
+                            ...prev,
+                            [layer.id]: e.target.value,
+                          }));
+                        }}
+                        onBlur={() => {
+                          const raw = heightInputs[layer.id] ?? "";
+                          const v = normalizeDecimalInput(raw);
                           setLayers(
                             layers.map((l) =>
                               l.id === layer.id
@@ -879,6 +904,11 @@ export default function AnnotatorCanvas({
                                 : l,
                             ),
                           );
+                          setHeightInputs((prev) => {
+                            const next = { ...prev };
+                            delete next[layer.id];
+                            return next;
+                          });
                         }}
                         className="w-32 px-2 py-2 sm:py-1.5 rounded-lg border border-[#cfe0d6] text-sm focus:outline-none focus:border-[#2d7d4e] focus:ring-1 focus:ring-[#2d7d4e]"
                       />
