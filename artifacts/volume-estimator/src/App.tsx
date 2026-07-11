@@ -72,6 +72,7 @@ function App() {
             </span>
             {phase === "annotate" && (
               <button
+                type="button"
                 onClick={handleNewPhoto}
                 className="flex items-center gap-1.5 text-sm font-medium text-[#a8c9b4] hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
               >
